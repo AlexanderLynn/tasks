@@ -1,0 +1,6 @@
+{
+  "name": "Tasks Todo App",
+  "domains": ["tasks_todo_app"],
+  "iot_class": "local_polling",
+  "homeassistant": "2026.6.0"
+}
