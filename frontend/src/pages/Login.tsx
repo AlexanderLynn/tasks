@@ -19,7 +19,6 @@ const Login = () => {
   const navigate = useNavigate();
 
   const completeAuth = (apiKey: string, user: Awaited<ReturnType<typeof usersApi.getCurrent>>) => {
-    localStorage.setItem('apiKey', apiKey);
     dispatch(setApiKey(apiKey));
     dispatch(setUser(user));
     navigate('/');

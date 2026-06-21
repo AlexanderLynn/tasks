@@ -144,13 +144,13 @@ Each component should be deployed in its own Docker container where it makes sen
 **Goal**: Add basic offline functionality.
 
 ### Tasks
-- [ ] Implement local storage for API key
-- [ ] Implement optimistic UI updates
-- [ ] Create offline operation queue
-- [ ] Implement background sync
-- [ ] Handle sync conflicts
-- [ ] Add offline indicator
-- [ ] Test offline scenarios
+- [x] Implement local storage for API key
+- [x] Implement optimistic UI updates
+- [x] Create offline operation queue
+- [x] Implement background sync
+- [x] Handle sync conflicts
+- [x] Add offline indicator
+- [x] Test offline scenarios
 
 ### Success Criteria
 - App works without network
@@ -264,3 +264,14 @@ Each component should be deployed in its own Docker container where it makes sen
 - ✅ MCP parity maintained with `share_list`, `set_permissions`, and `remove_list_member`
 - ✅ Frontend TypeScript check and Vite production build completed
 - ✅ Backend TypeScript build and test suite completed
+
+**Phase 5**: 100% complete
+- ✅ Centralized storage service for API key (with legacy key fallback)
+- ✅ Local cache for lists, items, and members
+- ✅ Offline operation queue persisted in localStorage
+- ✅ Optimistic UI updates for create, update, complete, undo, and delete actions
+- ✅ Background sync on reconnect and periodic interval via SyncManager
+- ✅ Version conflict handling with server refresh and user-facing conflict notices
+- ✅ Offline indicator banner for offline mode, pending sync, cached data, and conflicts
+- ✅ Vitest suite added (11 tests covering storage, cache, queue, schedule estimates, and sync)
+- ✅ Frontend TypeScript check and production build completed

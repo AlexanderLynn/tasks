@@ -3,9 +3,18 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Archive, Check, ChevronLeft, Edit3, RotateCcw, Trash2 } from 'lucide-react';
 import Button from '../components/Button';
 import ItemFormModal from '../components/ItemFormModal';
-import { Completion, itemsApi } from '../services/itemsApi';
+import {
+  completeItemOffline,
+  deleteItemOffline,
+  fetchItemData,
+  getOfflinePendingCount,
+  undoItemOffline,
+  updateItemOffline,
+} from '../services/offlineData';
+import { Completion } from '../services/itemsApi';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { deleteItem, updateItem, updateItemNextDue } from '../store/slices/itemsSlice';
+import { setFromCache, setPendingCount } from '../store/slices/offlineSlice';
 
 const completionTime = (completion: Completion) => completion.completedAt ?? completion.completed_at ?? '';
 
@@ -23,9 +32,13 @@ const ItemDetail = () => {
     const load = async () => {
       setError('');
       try {
-        const data = await itemsApi.getById(itemId);
+        const data = await fetchItemData(itemId);
         dispatch(updateItem(data.item));
-        setCompletions(data.completions);
+        if (data.completions) {
+          setCompletions(data.completions);
+        }
+        dispatch(setFromCache(data.fromCache));
+        dispatch(setPendingCount(getOfflinePendingCount()));
       } catch (err: any) {
         setError(err?.response?.data?.error?.message ?? 'Unable to load item');
       }
@@ -45,20 +58,23 @@ const ItemDetail = () => {
   }
 
   const complete = async () => {
-    const result = await itemsApi.complete(itemId);
-    setCompletions((current) => [result.completion, ...current]);
+    if (!item) return;
+    const result = await completeItemOffline(item);
     dispatch(updateItemNextDue({ id: itemId, nextDueAt: result.nextDueAt }));
+    dispatch(setPendingCount(getOfflinePendingCount()));
   };
 
   const undo = async () => {
-    const result = await itemsApi.undo(itemId);
-    setCompletions((current) => current.map((completion) => completion.id === result.completion.id ? result.completion : completion));
+    if (!item) return;
+    const result = await undoItemOffline(item);
     dispatch(updateItemNextDue({ id: itemId, nextDueAt: result.nextDueAt }));
+    dispatch(setPendingCount(getOfflinePendingCount()));
   };
 
   const remove = async () => {
-    await itemsApi.delete(itemId);
+    await deleteItemOffline(itemId);
     dispatch(deleteItem(itemId));
+    dispatch(setPendingCount(getOfflinePendingCount()));
     navigate(item ? `/lists/${item.listId}` : '/');
   };
 
@@ -135,8 +151,10 @@ const ItemDetail = () => {
                 type="button"
                 variant="secondary"
                 onClick={async () => {
-                  const updated = await itemsApi.update(item.id, { status: 'archived', version: item.version });
+                  if (!item) return;
+                  const updated = await updateItemOffline(item.id, { status: 'archived', version: item.version });
                   dispatch(updateItem(updated));
+                  dispatch(setPendingCount(getOfflinePendingCount()));
                 }}
                 className="inline-flex items-center gap-2"
               >
@@ -156,7 +174,7 @@ const ItemDetail = () => {
           item={item}
           onClose={() => setShowEdit(false)}
           onSubmit={async (data) => {
-            const updated = await itemsApi.update(item.id, {
+            const updated = await updateItemOffline(item.id, {
               title: data.title,
               description: data.description,
               type: data.type,
@@ -167,6 +185,7 @@ const ItemDetail = () => {
               version: data.version ?? item.version,
             });
             dispatch(updateItem(updated));
+            dispatch(setPendingCount(getOfflinePendingCount()));
           }}
         />
       )}

@@ -6,8 +6,17 @@ import ItemFormModal from '../components/ItemFormModal';
 import ListFormModal from '../components/ListFormModal';
 import SharingPanel from '../components/SharingPanel';
 import SwipeableItem from '../components/SwipeableItem';
-import { itemsApi } from '../services/itemsApi';
-import { listsApi, MemberPermission } from '../services/listsApi';
+import {
+  addListMemberOffline,
+  completeItemOffline,
+  createItemOffline,
+  fetchListData,
+  getOfflinePendingCount,
+  removeListMemberOffline,
+  updateListMemberOffline,
+  updateListOffline,
+} from '../services/offlineData';
+import { MemberPermission } from '../services/listsApi';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { addItem, mergeItems, updateItemNextDue } from '../store/slices/itemsSlice';
 import {
@@ -18,6 +27,7 @@ import {
   updateMember,
   removeMember,
 } from '../store/slices/listsSlice';
+import { setFromCache, setPendingCount } from '../store/slices/offlineSlice';
 
 const ListView = () => {
   const { listId } = useParams<{ listId: string }>();
@@ -47,11 +57,13 @@ const ListView = () => {
     const load = async () => {
       setError('');
       try {
-        const [listData, listItemData] = await Promise.all([listsApi.getById(listId), itemsApi.getByListId(listId)]);
-        dispatch(setCurrentList(listData.list));
-        dispatch(updateList(listData.list));
-        dispatch(setMembers({ listId, members: listData.members }));
-        dispatch(mergeItems(listItemData));
+        const data = await fetchListData(listId);
+        dispatch(setCurrentList(data.list));
+        dispatch(updateList(data.list));
+        dispatch(setMembers({ listId, members: data.members }));
+        dispatch(mergeItems(data.items));
+        dispatch(setFromCache(data.fromCache));
+        dispatch(setPendingCount(getOfflinePendingCount()));
       } catch (err: any) {
         setError(err?.response?.data?.error?.message ?? 'Unable to load list');
       }
@@ -68,8 +80,11 @@ const ListView = () => {
   }
 
   const completeItem = async (itemId: string) => {
-    const result = await itemsApi.complete(itemId);
+    const item = items.find((entry) => entry.id === itemId);
+    if (!item) return;
+    const result = await completeItemOffline(item);
     dispatch(updateItemNextDue({ id: itemId, nextDueAt: result.nextDueAt }));
+    dispatch(setPendingCount(getOfflinePendingCount()));
   };
 
   return (
@@ -173,16 +188,19 @@ const ListView = () => {
           <SharingPanel
             members={members}
             onAdd={async (userId: string, permission: MemberPermission) => {
-              const member = await listsApi.addMember(listId, { userId, permission });
+              const member = await addListMemberOffline(listId, userId, permission);
               dispatch(addMember(member));
+              dispatch(setPendingCount(getOfflinePendingCount()));
             }}
             onUpdate={async (userId: string, permission: MemberPermission) => {
-              const member = await listsApi.updateMember(listId, userId, { permission });
+              const member = await updateListMemberOffline(listId, userId, permission);
               dispatch(updateMember(member));
+              dispatch(setPendingCount(getOfflinePendingCount()));
             }}
             onRemove={async (userId: string) => {
-              await listsApi.removeMember(listId, userId);
+              await removeListMemberOffline(listId, userId);
               dispatch(removeMember({ listId, userId }));
+              dispatch(setPendingCount(getOfflinePendingCount()));
             }}
           />
         </div>
@@ -193,8 +211,9 @@ const ListView = () => {
           listId={listId}
           onClose={() => setShowItemForm(false)}
           onSubmit={async (data) => {
-            const item = await itemsApi.create({ ...data, listId });
+            const item = await createItemOffline({ ...data, listId });
             dispatch(addItem(item));
+            dispatch(setPendingCount(getOfflinePendingCount()));
           }}
         />
       )}
@@ -204,8 +223,9 @@ const ListView = () => {
           list={currentList}
           onClose={() => setShowListForm(false)}
           onSubmit={async (data) => {
-            const list = await listsApi.update(currentList.id, { name: data.name, version: data.version ?? currentList.version });
+            const list = await updateListOffline(currentList.id, { name: data.name, version: data.version ?? currentList.version });
             dispatch(updateList(list));
+            dispatch(setPendingCount(getOfflinePendingCount()));
           }}
         />
       )}

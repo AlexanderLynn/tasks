@@ -4,12 +4,12 @@ import { LogOut, KeyRound, Plus } from 'lucide-react';
 import Button from '../components/Button';
 import ApiKeyModal from '../components/ApiKeyModal';
 import ListFormModal from '../components/ListFormModal';
-import { itemsApi } from '../services/itemsApi';
-import { listsApi } from '../services/listsApi';
+import { fetchDashboardData, createListOffline, getOfflinePendingCount } from '../services/offlineData';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { mergeItems } from '../store/slices/itemsSlice';
 import { addList, setError, setLists, setLoading } from '../store/slices/listsSlice';
 import { logout } from '../store/slices/authSlice';
+import { setFromCache, setPendingCount } from '../store/slices/offlineSlice';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
@@ -26,9 +26,11 @@ const Dashboard = () => {
       dispatch(setLoading(true));
       dispatch(setError(null));
       try {
-        const [listData, itemData] = await Promise.all([listsApi.getAll(), itemsApi.getAll({ status: 'active' })]);
-        dispatch(setLists(listData));
-        dispatch(mergeItems(itemData.items));
+        const data = await fetchDashboardData();
+        dispatch(setLists({ lists: data.lists, members: data.members }));
+        dispatch(mergeItems(data.items));
+        dispatch(setFromCache(data.fromCache));
+        dispatch(setPendingCount(getOfflinePendingCount()));
       } catch (err: any) {
         dispatch(setError(err?.response?.data?.error?.message ?? 'Unable to load dashboard'));
       } finally {
@@ -123,8 +125,9 @@ const Dashboard = () => {
         <ListFormModal
           onClose={() => setShowCreate(false)}
           onSubmit={async (data) => {
-            const list = await listsApi.create({ name: data.name, type: data.type });
+            const list = await createListOffline({ name: data.name, type: data.type });
             dispatch(addList(list));
+            dispatch(setPendingCount(getOfflinePendingCount()));
           }}
         />
       )}
