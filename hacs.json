@@ -1,6 +1,6 @@
 {
   "name": "Tasks Todo App",
-  "domains": ["tasks_todo_app"],
-  "iot_class": "local_polling",
-  "homeassistant": "2026.6.0"
+  "homeassistant": "2026.6.0",
+  "hacs": "1.0.0",
+  "render_readme": true
 }
