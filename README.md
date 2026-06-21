@@ -106,6 +106,79 @@ User/AI Action → API/MCP → Server Validation → Database Update
 - [API Reference](./docs/api.md) - REST API documentation
 - [MVP Scope](./docs/mvp.md) - MVP features and implementation plan
 
+## Running the Backend
+
+### Prerequisites
+- Node.js v24 LTS or later
+- npm (comes with Node.js)
+
+### Setup
+
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The backend server will start on port 8080 by default. You can configure this using the `PORT` environment variable:
+
+```bash
+PORT=3000 npm run dev
+```
+
+### Environment Variables
+
+- `PORT` - Server port (default: 8080)
+- `DATABASE_PATH` - Path to SQLite database file (default: `./data/habits.db`)
+- `MCP_ENABLED` - Enable MCP server (default: true)
+- `MCP_PORT` - MCP server port (default: 8081)
+
+### Testing the API
+
+Once the server is running, you can test the API endpoints:
+
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# Create a user
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com"}'
+
+# Get lists (requires API key from user creation)
+curl http://localhost:8080/api/lists \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+See [API Reference](./docs/api.md) for complete API documentation.
+
+### Running the MCP Server
+
+The MCP server uses stdio transport for communication with AI agents. To run it standalone:
+
+```bash
+cd backend
+npm run mcp
+```
+
+The MCP server will start and listen for JSON-RPC messages via stdin/stdout. It includes tools for:
+- `list_items` - List items with filtering
+- `get_item` - Get a single item
+- `create_item` - Create a new item
+- `update_item` - Update an existing item
+- `complete_item` - Mark an item as complete
+- `undo_completion` - Undo a completion
+- `list_lists` - List all lists
+- `create_list` - Create a new list
+
+See [MCP Server Documentation](./docs/mcp-server.md) for detailed tool specifications.
+
 ## Home Assistant Setup
 
 ### Quick Start
