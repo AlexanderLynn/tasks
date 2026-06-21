@@ -21,9 +21,9 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy package files and install only production dependencies
+# Copy package files and install all dependencies (including devDependencies for hot reload)
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # Copy built code from builder
 COPY --from=builder /app/dist ./dist
