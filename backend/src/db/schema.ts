@@ -100,4 +100,9 @@ export const migrations = [
     name: 'initial_schema',
     sql: schema,
   },
+  {
+    version: 2,
+    name: 'add_user_password_hash',
+    sql: 'ALTER TABLE users ADD COLUMN password_hash TEXT;',
+  },
 ];

@@ -465,7 +465,7 @@ Get a single completion by ID.
 
 #### GET /api/users/me
 
-Get current user information.
+Get current user information (does not include the API key).
 
 **Response:**
 ```json
@@ -476,7 +476,6 @@ Get current user information.
       "id": "user-123",
       "name": "John Doe",
       "email": "john@example.com",
-      "apiKey": "api-key-456",
       "createdAt": "2026-06-01T00:00:00-06:00",
       "updatedAt": "2026-06-01T00:00:00-06:00"
     }
@@ -484,9 +483,48 @@ Get current user information.
 }
 ```
 
+#### GET /api/users/me/api-key
+
+Retrieve the API key for MCP and Home Assistant integrations. Requires authentication.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "apiKey": "generated-api-key"
+  }
+}
+```
+
+#### POST /api/users/login
+
+Sign in with email and password.
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "secure-password"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": { /* user object without apiKey */ },
+    "apiKey": "user-api-key"
+  }
+}
+```
+
+The `apiKey` is returned for the web client to store and use on subsequent API requests. It is not shown in the login UI by default; retrieve it later via `GET /api/users/me/api-key`.
+
 #### POST /api/users
 
-Create a new user.
+Create a new user account.
 
 **Request Body:**
 ```json

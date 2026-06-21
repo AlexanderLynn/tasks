@@ -1,18 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface Item {
-  id: string;
-  listId: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  completedAt?: string;
-  dueDate?: string;
-  schedule?: any;
-  tags?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Item } from '../../services/itemsApi';
 
 interface ItemsState {
   items: Item[];
@@ -33,6 +20,11 @@ const itemsSlice = createSlice({
     setItems: (state, action: PayloadAction<Item[]>) => {
       state.items = action.payload;
     },
+    mergeItems: (state, action: PayloadAction<Item[]>) => {
+      const byId = new Map(state.items.map((item) => [item.id, item]));
+      action.payload.forEach((item) => byId.set(item.id, item));
+      state.items = Array.from(byId.values());
+    },
     addItem: (state, action: PayloadAction<Item>) => {
       state.items.push(action.payload);
     },
@@ -40,6 +32,14 @@ const itemsSlice = createSlice({
       const index = state.items.findIndex(i => i.id === action.payload.id);
       if (index !== -1) {
         state.items[index] = action.payload;
+      } else {
+        state.items.push(action.payload);
+      }
+    },
+    updateItemNextDue: (state, action: PayloadAction<{ id: string; nextDueAt: string }>) => {
+      const item = state.items.find(i => i.id === action.payload.id);
+      if (item) {
+        item.nextDueAt = action.payload.nextDueAt;
       }
     },
     deleteItem: (state, action: PayloadAction<string>) => {
@@ -56,8 +56,10 @@ const itemsSlice = createSlice({
 
 export const {
   setItems,
+  mergeItems,
   addItem,
   updateItem,
+  updateItemNextDue,
   deleteItem,
   setLoading,
   setError,

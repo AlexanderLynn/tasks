@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import ListView from '../pages/ListView';
+import ItemDetail from '../pages/ItemDetail';
 import { useAppSelector } from '../store/hooks';
 
 const Router = () => {
@@ -20,6 +21,7 @@ const Router = () => {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/lists/:listId" element={<ListView />} />
+      <Route path="/items/:itemId" element={<ItemDetail />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -411,6 +411,33 @@ Update permissions for a list member.
 }
 ```
 
+#### `remove_list_member`
+
+Remove a member from a list.
+
+```typescript
+{
+  name: "remove_list_member",
+  description: "Remove a member from a list",
+  inputSchema: {
+    type: "object",
+    properties: {
+      listId: { type: "string", description: "List ID" },
+      userId: { type: "string", description: "User ID to remove" }
+    },
+    required: ["listId", "userId"]
+  }
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean,
+  memberId: string
+}
+```
+
 ## Authentication
 
 MCP server uses API keys for authentication:

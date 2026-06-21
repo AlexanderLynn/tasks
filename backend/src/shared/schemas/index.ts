@@ -13,18 +13,27 @@ export const scheduleRuleSchema = z.object({
   timezone: z.string(),
 });
 
-export const userSchema = z.object({
+export const userPublicSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(200),
   email: z.string().email(),
-  apiKey: z.string().min(32),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+});
+
+export const userSchema = userPublicSchema.extend({
+  apiKey: z.string().min(32),
 });
 
 export const createUserInputSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const loginInputSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
 });
 
 export const listSchema = z.object({

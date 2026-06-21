@@ -120,15 +120,15 @@ Each component should be deployed in its own Docker container where it makes sen
 **Goal**: Implement the main UI screens.
 
 ### Tasks
-- [ ] Login screen (API key input)
-- [ ] Dashboard (list overview, stats)
-- [ ] List view (items with swipe gestures)
-- [ ] Item detail view
-- [ ] Create/edit item form
-- [ ] Create/edit list form
-- [ ] Schedule builder UI
-- [ ] Tag input component
-- [ ] User sharing UI
+- [x] Login screen (API key input)
+- [x] Dashboard (list overview, stats)
+- [x] List view (items with swipe gestures)
+- [x] Item detail view
+- [x] Create/edit item form
+- [x] Create/edit list form
+- [x] Schedule builder UI
+- [x] Tag input component
+- [x] User sharing UI
 
 ### Success Criteria
 - All screens navigate correctly
@@ -250,3 +250,17 @@ Each component should be deployed in its own Docker container where it makes sen
 - ✅ Dark theme rendering verified
 - ✅ Routing and navigation tested
 - ✅ PWA service worker registration verified
+
+**Phase 4**: 100% complete
+- ✅ Login validates API keys against `/api/users/me`
+- ✅ Dashboard loads lists and active item stats
+- ✅ List view loads items, filters tags, and supports swipe-to-complete
+- ✅ Item detail view shows schedule, tags, and completion history
+- ✅ Create/edit item form implemented with schedule, tags, assignment, and item sharing fields
+- ✅ Create/edit list form implemented
+- ✅ Schedule builder UI implemented for once/daily/weekly/monthly/custom schedules
+- ✅ Tag input component implemented
+- ✅ User sharing UI implemented with REST endpoints for add/update/remove members
+- ✅ MCP parity maintained with `share_list`, `set_permissions`, and `remove_list_member`
+- ✅ Frontend TypeScript check and Vite production build completed
+- ✅ Backend TypeScript build and test suite completed

@@ -6,8 +6,51 @@ import { validateBody } from '../middleware/validation.js';
 import { AuthRequest, authenticateApiKey } from '../middleware/auth.js';
 import { AppError } from '../middleware/errors.js';
 import { logAudit } from '../services/audit.service.js';
+import { z } from 'zod';
 
 const router = Router();
+
+const memberInputSchema = z.object({
+  userId: z.string().uuid(),
+  permission: z.enum(['view', 'edit', 'admin']),
+});
+
+const permissionInputSchema = z.object({
+  permission: z.enum(['view', 'edit', 'admin']),
+});
+
+function transformMember(member: any) {
+  return {
+    id: member.id,
+    listId: member.list_id,
+    userId: member.user_id,
+    permission: member.permission,
+    joinedAt: member.joined_at,
+  };
+}
+
+async function requireListAdmin(listId: string, userId: string) {
+  const db = await getDb();
+  const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(listId) as any;
+
+  if (!list) {
+    throw new AppError('NOT_FOUND', 'List not found', 404);
+  }
+
+  if (list.owner_id === userId) {
+    return { db, list };
+  }
+
+  const member = db.prepare(
+    'SELECT * FROM list_members WHERE list_id = ? AND user_id = ? AND permission = ?'
+  ).get(listId, userId, 'admin');
+
+  if (!member) {
+    throw new AppError('FORBIDDEN', 'Admin permission required', 403);
+  }
+
+  return { db, list };
+}
 
 // GET /api/lists - Get all lists (requires auth)
 router.get('/', authenticateApiKey, async (req: AuthRequest, res: Response) => {
@@ -238,6 +281,113 @@ router.delete('/:id', authenticateApiKey, async (req: AuthRequest, res: Response
     res.json({
       success: true,
       data: { listId: id }
+    });
+  } catch (error: any) {
+    throw error;
+  }
+});
+
+// POST /api/lists/:id/members - Share a list with another user (requires admin)
+router.post('/:id/members', authenticateApiKey, validateBody(memberInputSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId, permission } = req.body;
+    const { db } = await requireListAdmin(id, req.userId!);
+
+    const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    if (!targetUser) {
+      throw new AppError('NOT_FOUND', 'User not found', 404);
+    }
+
+    const existingMember = db.prepare('SELECT * FROM list_members WHERE list_id = ? AND user_id = ?').get(id, userId);
+    if (existingMember) {
+      throw new AppError('CONFLICT', 'User is already a member of this list', 409);
+    }
+
+    const memberId = uuidv4();
+    const now = new Date().toISOString();
+    db.prepare(
+      'INSERT INTO list_members (id, list_id, user_id, permission, joined_at) VALUES (?, ?, ?, ?, ?)'
+    ).run(memberId, id, userId, permission, now);
+
+    await logAudit({
+      entityType: 'member',
+      entityId: memberId,
+      action: 'create',
+      userId: req.userId!,
+      changes: {}
+    });
+
+    const member = db.prepare('SELECT * FROM list_members WHERE id = ?').get(memberId);
+    res.json({
+      success: true,
+      data: { member: transformMember(member) }
+    });
+  } catch (error: any) {
+    throw error;
+  }
+});
+
+// PUT /api/lists/:id/members/:userId - Update member permissions (requires admin)
+router.put('/:id/members/:userId', authenticateApiKey, validateBody(permissionInputSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id, userId } = req.params;
+    const { permission } = req.body;
+    const { db } = await requireListAdmin(id, req.userId!);
+
+    const member = db.prepare('SELECT * FROM list_members WHERE list_id = ? AND user_id = ?').get(id, userId) as any;
+    if (!member) {
+      throw new AppError('NOT_FOUND', 'Member not found', 404);
+    }
+
+    db.prepare('UPDATE list_members SET permission = ? WHERE list_id = ? AND user_id = ?').run(permission, id, userId);
+
+    await logAudit({
+      entityType: 'member',
+      entityId: member.id,
+      action: 'update',
+      userId: req.userId!,
+      changes: { permission: { old: member.permission, new: permission } }
+    });
+
+    const updatedMember = db.prepare('SELECT * FROM list_members WHERE id = ?').get(member.id);
+    res.json({
+      success: true,
+      data: { member: transformMember(updatedMember) }
+    });
+  } catch (error: any) {
+    throw error;
+  }
+});
+
+// DELETE /api/lists/:id/members/:userId - Remove a member (requires admin)
+router.delete('/:id/members/:userId', authenticateApiKey, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id, userId } = req.params;
+    const { db, list } = await requireListAdmin(id, req.userId!);
+
+    if (list.owner_id === userId) {
+      throw new AppError('BAD_REQUEST', 'List owner cannot be removed', 400);
+    }
+
+    const member = db.prepare('SELECT * FROM list_members WHERE list_id = ? AND user_id = ?').get(id, userId) as any;
+    if (!member) {
+      throw new AppError('NOT_FOUND', 'Member not found', 404);
+    }
+
+    db.prepare('DELETE FROM list_members WHERE id = ?').run(member.id);
+
+    await logAudit({
+      entityType: 'member',
+      entityId: member.id,
+      action: 'delete',
+      userId: req.userId!,
+      changes: {}
+    });
+
+    res.json({
+      success: true,
+      data: { memberId: member.id }
     });
   } catch (error: any) {
     throw error;

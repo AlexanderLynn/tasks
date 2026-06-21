@@ -101,6 +101,11 @@ export interface CreateUserInput {
   password: string;
 }
 
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
 export interface CreateListInput {
   name: string;
   type: 'personal' | 'shared';

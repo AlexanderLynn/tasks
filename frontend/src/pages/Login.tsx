@@ -1,70 +1,136 @@
-import { useState } from 'react';
-import { useAppDispatch } from '../store/hooks';
-import { setUser } from '../store/slices/authSlice';
+import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import { usersApi } from '../services/usersApi';
+import { useAppDispatch } from '../store/hooks';
+import { setApiKey, setUser } from '../store/slices/authSlice';
+
+type AuthMode = 'signin' | 'signup';
 
 const Login = () => {
-  const [apiKey, setApiKey] = useState('');
+  const [mode, setMode] = useState<AuthMode>('signin');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const completeAuth = (apiKey: string, user: Awaited<ReturnType<typeof usersApi.getCurrent>>) => {
+    localStorage.setItem('apiKey', apiKey);
+    dispatch(setApiKey(apiKey));
+    dispatch(setUser(user));
+    navigate('/');
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      // Validate API key by making a test request
-      const response = await fetch('/api/users/me', {
-        headers: {
-          'X-API-Key': apiKey,
-        },
-      });
-
-      if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem('apiKey', apiKey);
-        dispatch(setUser(user));
-        navigate('/');
+      if (mode === 'signup') {
+        const { user, apiKey } = await usersApi.create({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        });
+        completeAuth(apiKey, user);
       } else {
-        setError('Invalid API key');
+        const { user, apiKey } = await usersApi.login({
+          email: email.trim(),
+          password,
+        });
+        completeAuth(apiKey, user);
       }
-    } catch (err) {
-      setError('Failed to connect to server');
+    } catch (err: any) {
+      const message = err?.response?.data?.error?.message;
+      if (mode === 'signup' && err?.response?.data?.error?.code === 'EMAIL_EXISTS') {
+        setError('An account with this email already exists');
+      } else if (mode === 'signin') {
+        setError(message ?? 'Invalid email or password');
+      } else {
+        setError(message ?? 'Unable to create account');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
+  const switchMode = (nextMode: AuthMode) => {
+    setMode(nextMode);
+    setError('');
+    setPassword('');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-kibana-bg p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-kibana-card border border-kibana-border rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-kibana-text mb-6 text-center">
-            Tasks
-          </h1>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="apiKey" className="block text-sm font-medium text-kibana-text mb-2">
-                API Key
-              </label>
-              <input
-                type="password"
-                id="apiKey"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-3 py-2 bg-kibana-bg border border-kibana-border rounded-md text-kibana-text placeholder-kibana-textSecondary focus:outline-none focus:ring-2 focus:ring-kibana-accent"
-                placeholder="Enter your API key"
-                required
-              />
-            </div>
-            {error && (
-              <p className="text-sm text-kibana-danger">{error}</p>
-            )}
+    <div className="min-h-screen bg-kibana-bg p-4 text-kibana-text">
+      <div className="mx-auto flex min-h-screen w-full max-w-md items-center">
+        <div className="w-full rounded-lg border border-kibana-border bg-kibana-card p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Tasks</h1>
+            <p className="mt-2 text-sm text-kibana-textSecondary">
+              {mode === 'signin' ? 'Sign in to manage your lists and habits.' : 'Create an account to get started.'}
+            </p>
+          </div>
+
+          <div className="mb-6 flex rounded-md border border-kibana-border bg-kibana-bg p-1">
             <button
-              type="submit"
-              className="w-full py-2 px-4 bg-kibana-accent hover:bg-kibana-accentHover text-white rounded-md transition-colors"
+              type="button"
+              onClick={() => switchMode('signin')}
+              className={`flex-1 rounded px-3 py-2 text-sm font-medium transition-colors ${
+                mode === 'signin' ? 'bg-kibana-accent text-white' : 'text-kibana-textSecondary hover:text-kibana-text'
+              }`}
             >
-              Sign In
+              Sign in
             </button>
+            <button
+              type="button"
+              onClick={() => switchMode('signup')}
+              className={`flex-1 rounded px-3 py-2 text-sm font-medium transition-colors ${
+                mode === 'signup' ? 'bg-kibana-accent text-white' : 'text-kibana-textSecondary hover:text-kibana-text'
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'signup' && (
+              <Input
+                label="Name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+                autoComplete="name"
+              />
+            )}
+            <Input
+              type="email"
+              label="Email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              autoComplete="email"
+            />
+            <Input
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              error={error}
+              required
+              minLength={mode === 'signup' ? 8 : undefined}
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            />
+            {mode === 'signup' && !error && (
+              <p className="text-xs text-kibana-textSecondary">Use at least 8 characters.</p>
+            )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (mode === 'signup' ? 'Creating account' : 'Signing in') : mode === 'signup' ? 'Create account' : 'Sign in'}
+            </Button>
           </form>
         </div>
       </div>
