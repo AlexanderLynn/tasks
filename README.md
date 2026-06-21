@@ -149,9 +149,14 @@ curl http://localhost:8080/health
 # Create a user
 curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test User","email":"test@example.com"}'
+  -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
 
-# Get lists (requires API key from user creation)
+# Sign in (returns apiKey for API/MCP use)
+curl -X POST http://localhost:8080/api/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+
+# Get lists (requires API key from signup or login)
 curl http://localhost:8080/api/lists \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
