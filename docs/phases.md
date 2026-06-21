@@ -73,14 +73,14 @@ Each component should be deployed in its own Docker container where it makes sen
 **Goal**: Implement the core scheduling engine and business logic.
 
 ### Tasks
-- [ ] Implement schedule calculation service
-- [ ] Handle all schedule types (once, daily, weekly, monthly, custom)
-- [ ] Implement timezone support
-- [ ] Add recurrence end date support
-- [ ] Implement next due date calculation
-- [ ] Add schedule validation
-- [ ] Test scheduling edge cases
-- [ ] Document scheduling behavior
+- [x] Implement schedule calculation service
+- [x] Handle all schedule types (once, daily, weekly, monthly, custom)
+- [x] Implement timezone support
+- [x] Add recurrence end date support
+- [x] Implement next due date calculation
+- [x] Add schedule validation
+- [x] Test scheduling edge cases
+- [x] Document scheduling behavior
 
 ### Success Criteria
 - All schedule types calculate correct next due dates
@@ -95,16 +95,16 @@ Each component should be deployed in its own Docker container where it makes sen
 **Goal**: Set up the PWA frontend with Kibana styling.
 
 ### Tasks
-- [ ] Create frontend project structure (package.json, vite.config.ts)
-- [ ] Set up React + Vite
-- [ ] Install TailwindCSS
-- [ ] Create Kibana color theme
-- [ ] Create base UI components (dark theme)
-- [ ] Implement swipe gestures library
-- [ ] Set up PWA manifest
-- [ ] Set up service worker
-- [ ] Create routing structure
-- [ ] Set up state management (Redux or similar)
+- [x] Create frontend project structure (package.json, vite.config.ts)
+- [x] Set up React + Vite
+- [x] Install TailwindCSS
+- [x] Create Kibana color theme
+- [x] Create base UI components (dark theme)
+- [x] Implement swipe gestures library
+- [x] Set up PWA manifest
+- [x] Set up service worker
+- [x] Create routing structure
+- [x] Set up state management (Redux or similar)
 
 ### Success Criteria
 - Frontend builds successfully
@@ -221,3 +221,28 @@ Each component should be deployed in its own Docker container where it makes sen
 - ✅ Test API endpoints completed (user creation, list creation working)
 - ✅ Test MCP server tools completed (server starts successfully, tools defined)
 - ✅ Docker containerization completed (API and MCP server in separate Alpine Node 24 LTS containers)
+
+**Phase 2**: 100% complete
+- ✅ Schedule calculation service enhanced with recurrence end date support
+- ✅ All schedule types handled (once, daily, weekly, monthly, custom)
+- ✅ Timezone support implemented using IANA timezone strings
+- ✅ Recurrence end date support added to calculation logic
+- ✅ Next due date calculation implemented for all schedule types
+- ✅ Schedule validation function implemented with comprehensive checks
+- ✅ Comprehensive test suite written (37 tests covering validation and calculation)
+- ✅ Scheduling behavior documented in docs/scheduling.md
+
+**Phase 3**: 100% complete
+- ✅ Frontend project structure created (package.json, vite.config.ts, tsconfig.json)
+- ✅ React + Vite set up
+- ✅ TailwindCSS installed and configured
+- ✅ Kibana color theme created (dark theme colors)
+- ✅ Base UI components created (Button, Input, Card, SwipeableItem)
+- ✅ Swipe gestures library implemented (react-swipeable)
+- ✅ PWA manifest configured (via vite-plugin-pwa)
+- ✅ Service worker set up (via vite-plugin-pwa with Workbox)
+- ✅ Routing structure created (react-router-dom with protected routes)
+- ✅ State management set up (Redux Toolkit with auth, lists, items slices)
+- ✅ API service created for backend communication (axios with interceptors)
+- ✅ npm dependencies installed
+- ✅ Frontend builds successfully (production build tested)

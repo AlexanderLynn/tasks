@@ -1,6 +1,67 @@
 import { ScheduleRule } from '../shared/types/index.js';
 
 /**
+ * Validate a schedule rule to ensure it's properly configured
+ * @returns Object with valid flag and error message if invalid
+ */
+export function validateSchedule(schedule: ScheduleRule): { valid: boolean; error?: string } {
+  // Validate timezone
+  try {
+    new Date().toLocaleString('en-US', { timeZone: schedule.timezone });
+  } catch (e) {
+    return { valid: false, error: `Invalid timezone: ${schedule.timezone}` };
+  }
+
+  // Validate time format if provided
+  if (schedule.time) {
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(schedule.time)) {
+      return { valid: false, error: `Invalid time format: ${schedule.time}. Expected HH:MM` };
+    }
+  }
+
+  // Validate end date if provided
+  if (schedule.endDate) {
+    const endDate = new Date(schedule.endDate);
+    if (isNaN(endDate.getTime())) {
+      return { valid: false, error: `Invalid end date: ${schedule.endDate}` };
+    }
+    if (endDate < new Date()) {
+      return { valid: false, error: `End date is in the past: ${schedule.endDate}` };
+    }
+  }
+
+  // Type-specific validation
+  switch (schedule.type) {
+    case 'weekly':
+      if (!schedule.daysOfWeek || schedule.daysOfWeek.length === 0) {
+        return { valid: false, error: 'Weekly schedule requires daysOfWeek array' };
+      }
+      if (schedule.daysOfWeek.some(day => day < 0 || day > 6)) {
+        return { valid: false, error: 'daysOfWeek must be between 0 (Sunday) and 6 (Saturday)' };
+      }
+      break;
+
+    case 'monthly':
+      if (!schedule.dayOfMonth || schedule.dayOfMonth.length === 0) {
+        return { valid: false, error: 'Monthly schedule requires dayOfMonth array' };
+      }
+      if (schedule.dayOfMonth.some(day => day < 1 || day > 31)) {
+        return { valid: false, error: 'dayOfMonth must be between 1 and 31' };
+      }
+      break;
+
+    case 'custom':
+      if (!schedule.interval || schedule.interval < 1) {
+        return { valid: false, error: 'Custom schedule requires interval >= 1' };
+      }
+      break;
+  }
+
+  return { valid: true };
+}
+
+/**
  * Calculate the next due date for an item based on its schedule rule
  */
 export function calculateNextDueDate(schedule: ScheduleRule, lastCompleted?: Date): Date {
@@ -8,30 +69,48 @@ export function calculateNextDueDate(schedule: ScheduleRule, lastCompleted?: Dat
   const baseDate = lastCompleted || now;
   const timezone = schedule.timezone;
 
+  let nextDue: Date;
+
   switch (schedule.type) {
     case 'once':
       // For one-time tasks, return the scheduled time if it's in the future
       if (schedule.time) {
         const scheduledTime = parseTime(schedule.time, baseDate, timezone);
-        return scheduledTime > now ? scheduledTime : new Date(8640000000000000); // Far future if passed
+        nextDue = scheduledTime > now ? scheduledTime : new Date(8640000000000000); // Far future if passed
+      } else {
+        nextDue = baseDate;
       }
-      return baseDate;
+      break;
 
     case 'daily':
-      return calculateDailyNext(schedule, baseDate, timezone);
+      nextDue = calculateDailyNext(schedule, baseDate, timezone);
+      break;
 
     case 'weekly':
-      return calculateWeeklyNext(schedule, baseDate, timezone);
+      nextDue = calculateWeeklyNext(schedule, baseDate, timezone);
+      break;
 
     case 'monthly':
-      return calculateMonthlyNext(schedule, baseDate, timezone);
+      nextDue = calculateMonthlyNext(schedule, baseDate, timezone);
+      break;
 
     case 'custom':
-      return calculateCustomNext(schedule, baseDate, timezone);
+      nextDue = calculateCustomNext(schedule, baseDate, timezone);
+      break;
 
     default:
-      return baseDate;
+      nextDue = baseDate;
   }
+
+  // Apply recurrence end date if set
+  if (schedule.endDate) {
+    const endDate = new Date(schedule.endDate);
+    if (nextDue > endDate) {
+      return new Date(8640000000000000); // Far future to indicate no more occurrences
+    }
+  }
+
+  return nextDue;
 }
 
 function calculateDailyNext(schedule: ScheduleRule, baseDate: Date, timezone: string): Date {
