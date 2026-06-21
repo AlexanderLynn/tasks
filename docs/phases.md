@@ -1,5 +1,31 @@
 # Implementation Phases
 
+## Docker Containerization Strategy
+
+Each component should be deployed in its own Docker container where it makes sense:
+
+- **API Server** (Phase 1): Separate container - HTTP REST API service
+  - Uses Alpine Node 24 LTS for minimal footprint
+  - Exposes port 8080
+  - Health check endpoint at /health
+  - Database volume mounted at /app/data
+
+- **MCP Server** (Phase 1): Separate container - stdio-based MCP protocol service
+  - Uses Alpine Node 24 LTS for minimal footprint
+  - Communicates via stdio (typically used by Claude Desktop)
+  - Shares database volume with API server
+  - Can be run independently or via docker-compose
+
+- **Frontend** (Phase 3-5): Separate container - PWA web application
+  - Uses Alpine Node 24 LTS for build
+  - Serves static files via nginx or similar
+  - Communicates with API container
+
+- **Home Assistant Addon** (Phase 6): Separate container
+  - Custom addon structure for Home Assistant
+  - Includes both API and MCP server components
+  - Managed by Home Assistant supervisor
+
 ## Phase 1: Backend Foundation
 
 **Goal**: Set up the core backend infrastructure with database, API, and MCP server.
@@ -23,6 +49,10 @@
 - [x] Add input validation middleware
 - [x] Test API endpoints
 - [x] Test MCP server tools
+- [x] Create Dockerfile for API server (Alpine Node 24 LTS)
+- [x] Create Dockerfile for MCP server (Alpine Node 24 LTS)
+- [x] Create docker-compose.yml for orchestration
+- [x] Test Docker build and run
 
 ### Success Criteria
 - Backend server starts successfully
@@ -32,6 +62,9 @@
 - Authentication works (API key validation)
 - Scheduling calculates correct next due dates
 - All operations are logged to audit trail
+- Docker containers build successfully
+- API container runs and responds to health checks
+- MCP container can be invoked via stdio
 
 ---
 
@@ -187,3 +220,4 @@
 - ✅ Install Node.js dependencies completed
 - ✅ Test API endpoints completed (user creation, list creation working)
 - ✅ Test MCP server tools completed (server starts successfully, tools defined)
+- ✅ Docker containerization completed (API and MCP server in separate Alpine Node 24 LTS containers)
