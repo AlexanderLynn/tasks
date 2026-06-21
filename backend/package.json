@@ -1,6 +1,6 @@
 {
   "name": "habit-tracker-backend",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Backend API and MCP server for Habit & Chore Tracker",
   "main": "dist/index.js",
   "type": "module",
