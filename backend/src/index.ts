@@ -6,7 +6,7 @@ import { errorHandler, notFoundHandler } from './middleware/errors.js';
 
 const app = express();
 const API_PORT = process.env.API_PORT || 8080;
-const MCP_ENABLED = process.env.MCP_ENABLED === 'true';
+const MCP_ENABLED = process.env.MCP_ENABLED === 'true' || process.env.ENABLE_MCP_SERVER === 'true';
 
 // Middleware
 app.use(cors());

@@ -23,6 +23,10 @@ if [ ! -f /data/tasks.db ]; then
     npm run migrate || true
 fi
 
+# Start nginx in background
+echo "Starting nginx..."
+nginx
+
 # Start the API server
 echo "Starting Tasks Todo App API Server..."
 echo "API Key: ${API_KEY:0:10}..."

@@ -23,7 +23,7 @@ privileged: []
 # Network settings
 ports:
   8080/tcp: 8080
-  3000/tcp: 3000
+  80/tcp: 80
 
 # Storage volume for database
 volumes:
@@ -77,13 +77,13 @@ schema:
 
 # Ingress configuration (for web interface access)
 ingress: true
-ingress_port: 3000
+ingress_port: 80
 ingress_entry: "/"
 
 # Map add-on ports to host if needed
 ports_description:
   8080/tcp: "API Server"
-  3000/tcp: "Frontend"
+  80/tcp: "Frontend (Nginx)"
 
 # Services that the addon provides
 services: []
