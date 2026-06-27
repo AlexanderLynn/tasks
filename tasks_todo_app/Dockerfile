@@ -39,7 +39,6 @@ RUN apk add --no-cache \
     nginx \
     bash \
     curl \
-    sqlite3 \
     tini
 
 # Set working directory for backend
