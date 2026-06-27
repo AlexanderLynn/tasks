@@ -61,9 +61,6 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Update nginx config to proxy to localhost
-RUN sed -i 's/proxy_pass http:\/\/api:8080/proxy_pass http:\/\/localhost:8080/g' /etc/nginx/conf.d/default.conf
-
 # Expose ports
 EXPOSE 8080 80
 
