@@ -68,8 +68,14 @@ const Login = () => {
     <div className="min-h-screen bg-kibana-bg p-4 text-kibana-text">
       <div className="mx-auto flex min-h-screen w-full max-w-md items-center">
         <div className="w-full rounded-lg border border-kibana-border bg-kibana-card p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <img src="/tasks-logo.svg" alt="Tasks" className="h-12 w-12 rounded-2xl border border-kibana-border bg-kibana-bg p-2" />
+            <div>
+              <h1 className="text-3xl font-bold leading-tight">Tasks</h1>
+              <p className="text-sm text-kibana-textSecondary">Task management for Home Assistant</p>
+            </div>
+          </div>
           <div className="mb-6">
-            <h1 className="text-3xl font-bold">Tasks</h1>
             <p className="mt-2 text-sm text-kibana-textSecondary">
               {mode === 'signin' ? 'Sign in to manage your lists and habits.' : 'Create an account to get started.'}
             </p>
