@@ -1,7 +1,7 @@
 ---
 name: "Tasks Todo App"
 description: "A scheduling and collaboration app for Home Assistant with MCP server integration"
-version: "0.1.6"
+version: "0.1.7"
 slug: "tasks_todo_app"
 url: "https://github.com/AlexanderLynn/tasks"
 init: false
@@ -12,6 +12,8 @@ arch:
 ports:
   8080/tcp: 8080
   3000/tcp: 3000
+  80/tcp: 80
+webui: http://[HOST]:[PORT:80]
 map:
   - config:rw
   - share:rw
