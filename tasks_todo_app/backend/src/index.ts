@@ -35,8 +35,9 @@ async function startServer() {
 
   // Start MCP server if enabled
   if (MCP_ENABLED) {
-    import('./mcp/index.js').then(() => {
-      console.log('MCP server started');
+    import('./mcp-server.js').then(() => {
+      const mcpPort = process.env.MCP_PORT || 3000;
+      console.log(`MCP HTTP server started on port ${mcpPort}`);
     }).catch((error) => {
       console.error('Failed to start MCP server:', error);
     });
