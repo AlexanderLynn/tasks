@@ -52,6 +52,9 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built backend from builder
 COPY --from=backend-builder /app/dist ./dist
 
+# Copy source files for migration scripts
+COPY --from=backend-builder /app/src ./src
+
 # Create data directory for SQLite
 RUN mkdir -p /data && chmod 777 /data
 
@@ -59,7 +62,7 @@ RUN mkdir -p /data && chmod 777 /data
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf /etc/nginx/nginx.conf
 
 # Expose ports
 EXPOSE 8080 80
