@@ -45,6 +45,12 @@ Before considering a feature complete, verify:
 
 When making bug fixes or changes that need to be deployed to Home Assistant, you MUST update version numbers and create releases for both repositories.
 
+For the Home Assistant add-on in this repository, always follow the repo-local skill:
+- `.codex/skills/haos-addon-release/SKILL.md`
+
+This is required whenever the user asks to bump the add-on version, update `tasks_todo_app/config.yaml`, create a git tag, or publish a release.
+Before choosing a version, always inspect the latest git tags instead of assuming the next version.
+
 ### Home Assistant Add-on (tasks/tasks_todo_app)
 
 **Files to update:**
