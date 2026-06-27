@@ -60,9 +60,11 @@ RUN mkdir -p /data && chmod 777 /data
 
 # Copy frontend build to nginx
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+RUN test -f /usr/share/nginx/html/index.html
 
 # Copy nginx configuration
 COPY frontend/nginx.conf /etc/nginx/nginx.conf
+RUN nginx -t
 
 # Expose ports
 EXPOSE 8080 8237
