@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler } from './middleware/errors.js';
 const app = express();
 const API_PORT = process.env.API_PORT || 8080;
 const MCP_ENABLED = process.env.MCP_ENABLED === 'true' || process.env.ENABLE_MCP_SERVER === 'true';
+const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT) : null;
 
 // Middleware
 app.use(cors());
@@ -35,11 +36,21 @@ async function startServer() {
 
   // Start MCP server if enabled
   if (MCP_ENABLED) {
-    import('./mcp/index.js').then(() => {
-      console.log('MCP server started');
-    }).catch((error) => {
-      console.error('Failed to start MCP server:', error);
-    });
+    if (MCP_PORT) {
+      // Start HTTP-based MCP server on specified port
+      import('./mcp-server.js').then(() => {
+        console.log(`MCP HTTP server started on port ${MCP_PORT}`);
+      }).catch((error) => {
+        console.error('Failed to start MCP HTTP server:', error);
+      });
+    } else {
+      // Start stdio-based MCP server
+      import('./mcp/index.js').then(() => {
+        console.log('MCP stdio server started');
+      }).catch((error) => {
+        console.error('Failed to start MCP stdio server:', error);
+      });
+    }
   }
 }
 
