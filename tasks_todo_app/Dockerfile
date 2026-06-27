@@ -65,7 +65,7 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 COPY frontend/nginx.conf /etc/nginx/nginx.conf
 
 # Expose ports
-EXPOSE 8080 80
+EXPOSE 8080 8237
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
