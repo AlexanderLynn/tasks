@@ -4,7 +4,7 @@ set -euo pipefail
 # Get options from Home Assistant
 API_KEY=$(jq -r '.api_key' /data/options.json)
 TIMEZONE=$(jq -r '.timezone' /data/options.json)
-ENABLE_MCP=$(jq -r '.enable_mcp_server // false' /data/options.json)
+ENABLE_MCP=$(jq -r '.enable_mcp_server // true' /data/options.json)
 MCP_PORT_OPTION=$(jq -r '.mcp_port // 3000' /data/options.json)
 LOG_LEVEL=$(jq -r '.log_level // "info"' /data/options.json)
 

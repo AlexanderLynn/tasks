@@ -1,7 +1,7 @@
 ---
 name: "Tasks Todo App"
 description: "A scheduling and collaboration app for Home Assistant with MCP server integration"
-version: "0.1.12"
+version: "0.1.13"
 slug: "tasks_todo_app"
 url: "https://github.com/AlexanderLynn/tasks"
 init: false
@@ -24,7 +24,7 @@ map:
 options:
   api_key: "default-key-change-me"
   timezone: "UTC"
-  enable_mcp_server: false
+  enable_mcp_server: true
   mcp_port: 3000
   log_level: "info"
 schema:
