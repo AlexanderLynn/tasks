@@ -1,5 +1,6 @@
 import { storage } from '../storage';
 import type { OfflineOperation, OfflineOperationType } from './types';
+import { createUuid } from '../../utils/id';
 
 function readQueue(): OfflineOperation[] {
   return storage.getCache<OfflineOperation[]>('OFFLINE_QUEUE') ?? [];
@@ -19,7 +20,7 @@ export function getPendingCount(): number {
 
 export function enqueue(type: OfflineOperationType, payload: Record<string, unknown>): OfflineOperation {
   const operation: OfflineOperation = {
-    id: crypto.randomUUID(),
+    id: createUuid(),
     type,
     payload,
     createdAt: new Date().toISOString(),

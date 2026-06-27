@@ -7,11 +7,12 @@ import { enqueue, getPendingCount } from './offline/queue';
 import { estimateNextDueAt, estimatePreviousDueAt } from './offline/scheduleEstimate';
 import { isNetworkError, isOffline, syncOfflineQueue, type SyncResult } from './offline/sync';
 import type { SyncConflict } from './offline/types';
+import { createUuid } from '../utils/id';
 
 export type { SyncConflict };
 
 function tempId(prefix: 'list' | 'item'): string {
-  return `temp-${prefix}-${crypto.randomUUID()}`;
+  return `temp-${prefix}-${createUuid()}`;
 }
 
 export async function fetchDashboardData(): Promise<{

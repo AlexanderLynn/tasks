@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import { itemsApi } from '../itemsApi';
 import { listsApi } from '../listsApi';
+import { createUuid } from '../../utils/id';
 import { replaceTempId, upsertItem, upsertList } from './cache';
 import { getQueue, incrementRetry, removeOperation } from './queue';
 import type {
@@ -121,7 +122,7 @@ function buildConflict(operation: OfflineOperation, message: string): SyncConfli
         : 'unknown';
 
   return {
-    id: crypto.randomUUID(),
+    id: createUuid(),
     operationId: operation.id,
     entityType: operation.type.startsWith('list.') ? 'list' : 'item',
     entityId,
