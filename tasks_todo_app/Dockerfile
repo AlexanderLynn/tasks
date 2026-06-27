@@ -39,7 +39,8 @@ RUN apk add --no-cache \
     nginx \
     bash \
     curl \
-    tini
+    tini \
+    jq
 
 # Set working directory for backend
 WORKDIR /app
